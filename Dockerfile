@@ -1,11 +1,10 @@
 # Use an official Python runtime as a parent image
 FROM python:3.12-slim
-ENV PROJECT_HOME=/work
-
-# Create data directory for output
+ENV WORKDIR=/work
 RUN mkdir /work
 
-WORKDIR ${PROJECT_HOME}
+# Set the working directory in the container
+WORKDIR ${WORKDIR}
 
 # Install runtime dependencies
 COPY requirements.txt .
