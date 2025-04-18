@@ -40,7 +40,9 @@ def search_book(title: str) -> Dict:
 
     # URL encode the title to handle all special characters
     encoded_title = urllib.parse.quote(title)
-    url = f"https://learning.oreilly.com/api/v2/search/?query={encoded_title}"
+    url = (
+        f"https://learning.oreilly.com/api/v2/search/?query={encoded_title}&field=title"
+    )
 
     response = requests.get(url)
 

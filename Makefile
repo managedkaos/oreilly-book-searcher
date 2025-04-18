@@ -31,6 +31,8 @@ lint:
 	black --diff *.py
 	isort --check-only --diff *.py
 
+fmt: black isort
+
 black:
 	black *.py
 
