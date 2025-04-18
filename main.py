@@ -34,9 +34,94 @@ def read_titles(filename: str) -> List[str]:
     return titles
 
 
-def search_book(title: str) -> Dict:
-    """Search for a book by title using the O'Reilly API."""
+def find_best_match(title: str, book_data: Dict) -> Dict:
+    """Find the best matching book from the search results based on criteria:
+    1. Must be a book format
+    2. Title should match as closely as possible
+    3. Among matching titles, choose the newest publication
+    """
+    if not book_data or "results" not in book_data or not book_data["results"]:
+        logger.debug("No book data or results found")
+        return None
+
+    logger.debug(f"Considering {len(book_data['results'])} results")
+    for result in book_data["results"]:
+        logger.debug(f"Title: {result.get('title')}; Issued: {result.get('issued')}")
+
+    # Filter for books only and create a list of candidates
+    candidates = []
+    for result in book_data["results"]:
+        if result.get("format") != "book":
+            continue
+
+        # Store candidate with match info
+        candidates.append({"result": result, "issued": result.get("issued", "")})
+
+    if not candidates:
+        logger.debug("No book format results found")
+        return None
+
+    logger.debug(f"Found {len(candidates)} candidates")
+    for candidate in candidates:
+        logger.debug(
+            f"Candidate title: {candidate['result'].get('title')}, Issued: {candidate['issued']}"
+        )
+
+    # Sort candidates by publication date (newest first)
+    def get_sort_key(candidate):
+        try:
+            # Extract date part and parse it
+            date_str = candidate["issued"].split("T")[0]
+            return time.strptime(date_str, "%Y-%m-%d")
+        except (AttributeError, ValueError, IndexError):
+            # If date is missing or malformed, put it at the end
+            return time.strptime("1900-01-01", "%Y-%m-%d")
+
+    candidates.sort(key=get_sort_key, reverse=True)
+    best_match = candidates[0]["result"]
+    logger.debug(
+        f"Selected best match: {best_match.get('title')} (issued: {best_match.get('issued')})"
+    )
+    return best_match
+
+
+def extract_publication_date(title: str, book_data: Dict) -> str:
+    """Extract the publication date from the best matching book data."""
+    best_match = find_best_match(title, book_data)
+
+    if not best_match or "issued" not in best_match:
+        logger.debug("No publication date found in book data")
+        return "Not found"
+
+    pub_date = best_match["issued"].split("T")[0]
+    logger.debug(f"Found publication date: {pub_date}")
+    return pub_date
+
+
+def search_book(title: str, use_cache: bool = False) -> Dict:
+    """Search for a book by title using the O'Reilly API or cached results."""
     logger.debug(f"Searching for book: {title}")
+
+    if use_cache:
+        # Try to load from cache
+        filename = sanitize_filename(title)
+        filepath = os.path.join("data", filename)
+
+        if os.path.exists(filepath):
+            logger.debug(f"Loading cached result from {filepath}")
+            try:
+                with open(filepath, "r") as f:
+                    return json.load(f)
+            except json.JSONDecodeError:
+                logger.warning(
+                    f"Failed to parse cached file {filepath}, falling back to API"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Error reading cached file {filepath}: {e}, falling back to API"
+                )
+        else:
+            logger.debug(f"No cached result found at {filepath}, using API")
 
     # URL encode the title to handle all special characters
     encoded_title = urllib.parse.quote(title)
@@ -56,28 +141,12 @@ def search_book(title: str) -> Dict:
         with open(filepath, "w") as f:
             json.dump(response.json(), f, indent=2)
 
-        logger.debug(f"Saved individual result to {filepath}")
+        logger.debug(f"Saved result to {filepath}")
 
         return response.json()
     else:
         logger.error(f"Error searching for {title}: {response.status_code}")
         return None
-
-
-def extract_publication_date(book_data: Dict) -> str:
-    """Extract the publication date from the book data."""
-    if not book_data or "results" not in book_data or not book_data["results"]:
-        logger.debug("No book data or results found")
-        return "Not found"
-
-    # Get the first result (most relevant)
-    first_result = book_data["results"][0]
-    if "issued" in first_result:
-        pub_date = first_result["issued"].split("T")[0]
-        logger.debug(f"Found publication date: {pub_date}")
-        return pub_date
-    logger.debug("No publication date found in book data")
-    return "Not found"
 
 
 def create_data_directory():
@@ -100,6 +169,9 @@ def sanitize_filename(title: str) -> str:
 
 
 def main():
+    # Check if we should use cached results
+    use_cache = os.getenv("USE_CACHE", "False").lower() == "true"
+
     logger.debug("Starting book search script")
 
     # Create data directory
@@ -113,21 +185,22 @@ def main():
 
     # Search for each title
     for title in titles:
-        logger.debug(f"\nProcessing title: {title}")
+        logger.debug(f"Processing title: {title}")
 
         # Make API request
-        book_data = search_book(title)
+        book_data = search_book(title, use_cache)
 
         # Extract and print publication date
-        pub_date = extract_publication_date(book_data)
+        pub_date = extract_publication_date(title, book_data)
         results[title] = pub_date
 
         # Print progress to STDOUT
         print(f"{title}: {pub_date}")
 
-        # Wait 1 second between requests to respect rate limits
-        logger.debug("Waiting 1 second before next request")
-        time.sleep(1)
+        if not use_cache:
+            # Wait 1 second between requests to respect rate limits
+            logger.debug("Waiting 1 second before next request")
+            time.sleep(1)
 
     # Save all results to JSON file
     summary_filepath = os.path.join("data", "publication_dates.json")
