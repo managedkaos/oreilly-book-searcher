@@ -1,0 +1,182 @@
+Head First Software Architecture
+O'Reilly
+EPUB
+73 MB
+PDF
+50.7 MB
+
+Head First C#
+O'Reilly
+EPUB
+121 MB
+PDF
+111.8 MB
+
+RESTful Web API Patterns & Practices Cookbook
+O'Reilly
+EPUB
+6 MB
+PDF
+17.6 MB
+
+Fundamentals of Software Architecture
+O'Reilly
+PDF
+23.6 MB
+EPUB
+19.7 MB
+
+Software Architecture Metrics
+O'Reilly
+EPUB
+7.7 MB
+PDF
+8 MB
+
+Practical Process Automation
+O'Reilly
+EPUB
+16.1 MB
+PDF
+19.5 MB
+
+Head First JavaScript Programming
+O'Reilly
+EPUB
+142.3 MB
+PDF
+97.1 MB
+
+Learning Systems Thinking
+O'Reilly
+PDF
+15.3 MB
+EPUB
+8.3 MB
+
+Learning Domain-Driven Design
+O'Reilly
+EPUB
+11.3 MB
+PDF
+19.4 MB
+
+Foundations of Scalable Systems
+O'Reilly
+EPUB
+8.2 MB
+PDF
+6.3 MB
+
+Flow Architectures
+O'Reilly
+EPUB
+7.7 MB
+PDF
+13 MB
+
+Monolith to Microservices
+O'Reilly
+EPUB
+10.1 MB
+PDF
+13 MB
+
+Mastering API Architecture
+O'Reilly
+EPUB
+7.1 MB
+PDF
+9.3 MB
+
+Enabling Microservice Success
+O'Reilly
+EPUB
+4.7 MB
+PDF
+5.5 MB
+
+Building an Event-Driven Data Mesh
+O'Reilly
+EPUB
+6.4 MB
+PDF
+6.9 MB
+
+Building Evolutionary Architectures, 2nd Edition
+O'Reilly
+EPUB
+8.4 MB
+PDF
+8.2 MB
+
+Building Microservices, 2nd Edition
+O'Reilly
+EPUB
+13.6 MB
+PDF
+15.4 MB
+
+Designing Distributed Systems
+O'Reilly
+EPUB
+3.4 MB
+PDF
+6 MB
+
+Communication Patterns
+O'Reilly
+EPUB
+12.1 MB
+PDF
+34.5 MB
+
+Technology Strategy Patterns
+O'Reilly
+EPUB
+4.9 MB
+PDF
+7 MB
+
+Building Event-Driven Microservices
+O'Reilly
+EPUB
+6.7 MB
+PDF
+10.4 MB
+
+Serverless Development on AWS
+O'Reilly
+EPUB
+14 MB
+PDF
+18.8 MB
+
+Software Architecture: The Hard Parts
+O'Reilly
+EPUB
+17.2 MB
+PDF
+15.2 MB
+
+The Software Architect Elevator
+O'Reilly
+EPUB
+19.9 MB
+PDF
+21.3 MB
+
+Building Multi-Tenant SaaS Architectures
+O'Reilly
+EPUB
+12.8 MB
+PDF
+14.6 MB
+
+Software Architecture Patterns, 2nd Edition
+O'Reilly
+EPUB
+4.4 MB
+PDF
+2.7 MB
+

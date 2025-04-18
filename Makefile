@@ -38,7 +38,10 @@ isort:
 	isort *.py
 
 test:
-	python -m unittest --verbose --failfast
+	pytest test_main.py -v
+
+local:
+	python main.py
 
 build: lint test
 	docker build --tag $(APP):$(TAG) .

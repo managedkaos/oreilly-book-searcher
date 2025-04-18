@@ -1,0 +1,5 @@
+For the book titled "Facilitating Software Architecture":
+
+```
+curl -s -X GET 'https://learning.oreilly.com/api/v2/search/?query=Facilitating%20Software%20Architecture&start=%s&end=%s'
+```
