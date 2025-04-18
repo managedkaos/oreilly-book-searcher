@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: make development-requirements
 
-      - name: Test with unittest
+      - name: Test with pytest
         run: make test
 
   build:

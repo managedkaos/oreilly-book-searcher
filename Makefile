@@ -48,10 +48,19 @@ local:
 build: lint test
 	docker build --tag $(APP):$(TAG) .
 
+run:
+	docker run -it --rm \
+	  --volume $(PWD)/titles.txt:/work/titles.txt:ro \
+	  --volume $(PWD)/data:/work/data \
+	  $(APP):$(TAG) \
+
 clean:
 	docker container stop $(APP) || true
 	docker container rm $(APP) || true
 	@rm -rf ./__pycache__ ./tests/__pycache__
 	@rm -f .*~ *.pyc
+
+nuke: clean
+	/bin/rm -rvf ./data
 
 .PHONY: help requirements lint black isort test build clean development-requirements

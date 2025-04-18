@@ -1,13 +1,18 @@
 # Use an official Python runtime as a parent image
 FROM python:3.12-slim
-ENV PROJECT_HOME=/data
-RUN mkdir /data
+ENV PROJECT_HOME=/work
 
-# Set the working directory in the container
-WORKDIR /usr/local/bin
+# Create data directory for output
+RUN mkdir /work
 
-# Copy the script into the container at /usr/src/app
-COPY ./script.py /usr/local/bin/
+WORKDIR ${PROJECT_HOME}
+
+# Install runtime dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy necessary files
+COPY main.py /usr/local/bin
 
 # Run the script when the container launches
-ENTRYPOINT ["python", "/usr/local/bin/script.py"]
+ENTRYPOINT ["python", "/usr/local/bin/main.py"]
