@@ -2,8 +2,8 @@ APP = $(notdir $(CURDIR))
 TAG = $(shell echo "$$(date +%F)-$$(git rev-parse --short HEAD)")
 DOCKER_REPO = ghcr.io/managedkaos
 
-DEBUG ?= True
-USE_CACHE ?= True
+DEBUG = True
+USE_CACHE = True
 
 
 help:
