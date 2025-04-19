@@ -2,6 +2,9 @@ APP = $(notdir $(CURDIR))
 TAG = $(shell echo "$$(date +%F)-$$(git rev-parse --short HEAD)")
 DOCKER_REPO = ghcr.io/managedkaos
 
+DEBUG ?= True
+USE_CACHE ?= True
+
 
 help:
 	@echo "Run make <target> where target is one of the following..."
@@ -43,16 +46,22 @@ test:
 	pytest test_main.py -v
 
 local:
-	python main.py
+	DEBUG=$(DEBUG) python main.py
 
 build: lint test
 	docker build --tag $(APP):$(TAG) .
 
-run:
-	docker run -it --rm \
+docker-run:
+	docker run -it --rm -e DEBUG=$(DEBUG) -e USE_CACHE=$(USE_CACHE) \
 	  --volume $(PWD)/titles.txt:/work/titles.txt:ro \
 	  --volume $(PWD)/data:/work/data \
 	  $(APP):$(TAG) \
+
+remote:
+	docker run -it --rm -e DEBUG=$(DEBUG) -e USE_CACHE=$(USE_CACHE) \
+	  --volume $(PWD)/titles.txt:/work/titles.txt:ro \
+	  --volume $(PWD)/data:/work/data \
+	  $(DOCKER_REPO)/$(APP):main \
 
 clean:
 	docker container stop $(APP) || true
@@ -61,6 +70,6 @@ clean:
 	@rm -f .*~ *.pyc
 
 nuke: clean
-	/bin/rm -rvf ./data
+	/bin/rm -rvf ./data/*
 
 .PHONY: help requirements lint black isort test build clean development-requirements
