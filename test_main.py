@@ -63,13 +63,19 @@ def test_create_data_directory():
 
 
 @patch("requests.get")
-def test_search_book_api(mock_get):
+@patch("builtins.open")
+@patch("os.makedirs")
+def test_search_book_api(mock_makedirs, mock_open, mock_get):
     """Test book search with mocked API response."""
     # Configure mock response
     mock_response = type(
         "MockResponse", (), {"status_code": 200, "json": lambda: TEST_API_RESPONSE}
     )
     mock_get.return_value = mock_response
+
+    # Mock file write
+    mock_file = mock_open.return_value.__enter__.return_value
+    mock_file.write.return_value = None
 
     # Test successful search
     result = search_book(TEST_TITLE, use_cache=False)
@@ -78,6 +84,9 @@ def test_search_book_api(mock_get):
     # Verify the URL includes the field parameter
     expected_url = f"https://learning.oreilly.com/api/v2/search/?query={urllib.parse.quote(TEST_TITLE)}&field=title"
     mock_get.assert_called_with(expected_url)
+
+    # Verify file was written
+    mock_open.assert_called_with("data/Head-First-Software-Architecture.json", "w")
 
     # Test failed search
     mock_response.status_code = 404
