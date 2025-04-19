@@ -1,9 +1,13 @@
+import json
+import os
+import time
 import urllib.parse
 from unittest.mock import mock_open, patch
 
 from main import (
     create_data_directory,
     extract_publication_date,
+    find_best_match,
     read_titles,
     sanitize_filename,
     search_book,
@@ -17,8 +21,19 @@ TEST_API_RESPONSE = {
         {
             "title": TEST_TITLE,
             "issued": f"{TEST_PUB_DATE}T00:00:00Z",
+            "format": "book",
             "other_data": "irrelevant",
-        }
+        },
+        {
+            "title": "Different Book",
+            "issued": "2023-01-01T00:00:00Z",
+            "format": "book",
+        },
+        {
+            "title": "Not a Book",
+            "issued": "2024-01-01T00:00:00Z",
+            "format": "video",
+        },
     ]
 }
 
@@ -51,7 +66,7 @@ def test_create_data_directory():
 
 
 @patch("requests.get")
-def test_search_book(mock_get):
+def test_search_book_api(mock_get):
     """Test book search with mocked API response."""
     # Configure mock response
     mock_response = type(
@@ -60,7 +75,7 @@ def test_search_book(mock_get):
     mock_get.return_value = mock_response
 
     # Test successful search
-    result = search_book(TEST_TITLE)
+    result = search_book(TEST_TITLE, use_cache=False)
     assert result == TEST_API_RESPONSE
 
     # Verify the URL includes the field parameter
@@ -69,19 +84,62 @@ def test_search_book(mock_get):
 
     # Test failed search
     mock_response.status_code = 404
-    result = search_book(TEST_TITLE)
+    result = search_book(TEST_TITLE, use_cache=False)
     assert result is None
+
+
+def test_find_best_match():
+    """Test finding the best matching book from results."""
+    # Test with valid data
+    best_match = find_best_match(TEST_TITLE, TEST_API_RESPONSE)
+    assert best_match["title"] == TEST_TITLE
+    assert best_match["issued"] == f"{TEST_PUB_DATE}T00:00:00Z"
+
+    # Test with no results
+    assert find_best_match(TEST_TITLE, {}) is None
+    assert find_best_match(TEST_TITLE, {"results": []}) is None
+
+    # Test with no books
+    no_books = {
+        "results": [
+            {
+                "title": "Not a Book",
+                "issued": "2024-01-01T00:00:00Z",
+                "format": "video",
+            }
+        ]
+    }
+    assert find_best_match(TEST_TITLE, no_books) is None
+
+    # Test with multiple books, should pick newest
+    multiple_books = {
+        "results": [
+            {
+                "title": "Old Book",
+                "issued": "2020-01-01T00:00:00Z",
+                "format": "book",
+            },
+            {
+                "title": "New Book",
+                "issued": "2024-01-01T00:00:00Z",
+                "format": "book",
+            },
+        ]
+    }
+    best_match = find_best_match("Book", multiple_books)
+    assert best_match["title"] == "New Book"
+    assert best_match["issued"] == "2024-01-01T00:00:00Z"
 
 
 def test_extract_publication_date():
     """Test publication date extraction."""
     # Test successful extraction
-    assert extract_publication_date(TEST_API_RESPONSE) == TEST_PUB_DATE
+    assert extract_publication_date(TEST_TITLE, TEST_API_RESPONSE) == TEST_PUB_DATE
 
     # Test missing results
-    assert extract_publication_date({}) == "Not found"
-    assert extract_publication_date({"results": []}) == "Not found"
+    assert extract_publication_date(TEST_TITLE, {}) == "Not found"
+    assert extract_publication_date(TEST_TITLE, {"results": []}) == "Not found"
 
     # Test missing issued date
-    no_date_response = {"results": [{"title": TEST_TITLE}]}
-    assert extract_publication_date(no_date_response) == "Not found"
+    no_date_response = {"results": [{"title": TEST_TITLE, "format": "book"}]}
+    assert extract_publication_date(TEST_TITLE, no_date_response) == "Not found"
