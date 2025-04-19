@@ -1,6 +1,3 @@
-import json
-import os
-import time
 import urllib.parse
 from unittest.mock import mock_open, patch
 
